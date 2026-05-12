@@ -108,6 +108,11 @@ add_filter( 'template_include', 'sdc_load_page_template' );
  * Cargar estilos del simulador.
  */
 function sdc_enqueue_scripts() {
+    // Solo cargar si es la página del simulador o usa el template del simulador
+    if ( ! is_page( 'simulador-de-crisis' ) && ! is_page_template( 'templates/page-simulator.php' ) ) {
+        return;
+    }
+
     wp_enqueue_style( 'sdc-styles', plugin_dir_url( __FILE__ ) . 'assets/css/simulador-styles.css', array(), '1.0.5' );
     wp_enqueue_script( 'sdc-chartjs', 'https://cdn.jsdelivr.net/npm/chart.js', array(), '4.4.1', true );
     wp_enqueue_script( 'sdc-counter', plugin_dir_url( __FILE__ ) . 'assets/js/counter.js', array(), '1.0.0', true );
