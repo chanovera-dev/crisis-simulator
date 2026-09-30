@@ -105,24 +105,52 @@ function sdc_load_page_template( $template ) {
 add_filter( 'template_include', 'sdc_load_page_template' );
 
 /**
- * Cargar estilos del simulador.
+ * Helper de iconos autónomo para compatibilidad.
  */
-function sdc_enqueue_scripts() {
-    // Solo cargar si es la página del simulador o usa el template del simulador
-    if ( ! is_page( 'simulador-de-crisis' ) && ! is_page_template( 'templates/page-simulator.php' ) ) {
+require_once plugin_dir_path( __FILE__ ) . 'inc/icons.php';
+
+/**
+ * Función para registrar y encolar los scripts y estilos del simulador.
+ */
+function sdc_load_simulator_assets() {
+    static $assets_enqueued = false;
+    if ( $assets_enqueued ) {
         return;
     }
 
-    wp_enqueue_style( 'sdc-styles', plugin_dir_url( __FILE__ ) . 'assets/css/simulador-styles.css', array(), '1.0.5' );
+    wp_enqueue_style( 'sdc-styles', plugin_dir_url( __FILE__ ) . 'assets/css/simulador-styles.css', array(), '1.0.7' );
     wp_enqueue_script( 'sdc-chartjs', 'https://cdn.jsdelivr.net/npm/chart.js', array(), '4.4.1', true );
     wp_enqueue_script( 'sdc-counter', plugin_dir_url( __FILE__ ) . 'assets/js/counter.js', array(), '1.0.0', true );
     wp_enqueue_script( 'sdc-animate-in', plugin_dir_url( __FILE__ ) . 'assets/js/animate-in.js', array(), '1.0.0', true );
-    wp_enqueue_script( 'sdc-scripts', plugin_dir_url( __FILE__ ) . 'assets/js/simulador-scripts.js', array('jquery', 'sdc-chartjs', 'sdc-animate-in'), '1.0.5', true );
+    wp_enqueue_script( 'sdc-scripts', plugin_dir_url( __FILE__ ) . 'assets/js/simulador-scripts.js', array('jquery', 'sdc-chartjs', 'sdc-animate-in'), '1.0.7', true );
     
     // Pasar URL de AJAX al frontend
     wp_localize_script( 'sdc-scripts', 'sdc_ajax', array(
         'ajax_url' => admin_url( 'admin-ajax.php' )
     ));
+
+    $assets_enqueued = true;
+}
+
+/**
+ * Cargar estilos del simulador.
+ */
+function sdc_enqueue_scripts() {
+    global $post;
+
+    $should_enqueue = false;
+
+    if ( is_page( 'simulador-de-crisis' ) || is_page_template( 'templates/page-simulator.php' ) ) {
+        $should_enqueue = true;
+    } elseif ( is_page_template( 'templates/corporate.php' ) || is_front_page() ) {
+        $should_enqueue = true;
+    } elseif ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'simulador_de_crisis' ) ) {
+        $should_enqueue = true;
+    }
+
+    if ( $should_enqueue ) {
+        sdc_load_simulator_assets();
+    }
 }
 add_action( 'wp_enqueue_scripts', 'sdc_enqueue_scripts' );
 
@@ -130,6 +158,7 @@ add_action( 'wp_enqueue_scripts', 'sdc_enqueue_scripts' );
  * Shortcode para mostrar el simulador.
  */
 function sdc_simulator_shortcode() {
+    sdc_load_simulator_assets();
     ob_start();
     include plugin_dir_path( __FILE__ ) . 'templates/simulador-view.php';
     return ob_get_clean();

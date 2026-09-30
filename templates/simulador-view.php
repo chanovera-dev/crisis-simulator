@@ -6,13 +6,13 @@
 ?>
 <div class="sdc-simulator-container">
     <!-- SECCIÓN 1: El Impacto del Tiempo -->
-    <section class="sdc-section sdc-section-1 active" data-step="1">
+    <section class="sdc-section sdc-section-1 active blue-background-00" data-step="1">
         <div class="sdc-nav-top">
             <button class="sdc-nav-btn sdc-btn-prev disabled">Anterior</button>
             <button class="sdc-nav-btn sdc-btn-next" data-next="2">Siguiente</button>
         </div>
 
-        <div class="span-tag alert sdc-animate">
+        <div class="sub-heading timeline alert sdc-animate">
             <?= avante_get_icon('exclamation-triangle-fill'); ?> Alerta de crisis activa
         </div>
         
@@ -54,7 +54,7 @@
     </section>
 
     <!-- SECCIÓN 2: Registro de Datos -->
-    <section class="sdc-section sdc-section-2" id="section-2" data-step="2">
+    <section class="sdc-section sdc-section-2 blue-background-00" id="section-2" data-step="2">
         <div class="sdc-nav-top">
             <button class="sdc-nav-btn sdc-btn-prev" data-prev="1">Anterior</button>
             <button class="sdc-nav-btn sdc-btn-next disabled" data-next="3">Siguiente</button>
@@ -123,7 +123,7 @@
     </section>
 
     <!-- SECCIÓN 3: Triage de Amenazas -->
-    <section class="sdc-section sdc-section-3" data-step="3">
+    <section class="sdc-section sdc-section-3 blue-background-00" data-step="3">
         <div class="sdc-nav-top">
             <button class="sdc-nav-btn sdc-btn-prev" data-prev="2">Anterior</button>
             <button class="sdc-nav-btn sdc-btn-next disabled" data-next="4">Siguiente</button>
@@ -142,6 +142,12 @@
             <div class="sdc-triage-scanner sdc-animate">
                 <div class="sdc-scanner-deck" id="sdc-threat-deck">
                     <div class="sdc-active-card" id="current-threat-card">
+                        <div class="radar-circle circle-1"></div>
+                        <div class="radar-circle circle-2"></div>
+                        <div class="radar-circle circle-3"></div>
+                        <div class="radar-crosshair-h"></div>
+                        <div class="radar-crosshair-v"></div>
+                        <div class="radar-pulse"></div>
                         <div class="sdc-card-scanner-line"></div>
                         <div class="sdc-card-content">
                             <span class="sdc-mini-label">ANALIZANDO REPORTE...</span>
@@ -198,7 +204,7 @@
     </section>
 
     <!-- SECCIÓN 4: Mapa de Stakeholders (Tablero Táctico) -->
-    <section class="sdc-section sdc-section-4" data-step="4">
+    <section class="sdc-section sdc-section-4 blue-background-00" data-step="4">
         <div class="sdc-nav-top">
             <button class="sdc-nav-btn sdc-btn-prev" data-prev="3">Anterior</button>
             <button class="sdc-nav-btn sdc-btn-next disabled" data-next="5">Siguiente</button>
@@ -282,7 +288,7 @@
     </section>
 
     <!-- WAR ROOM: MISIÓN REPUTACIÓN (Secciones 5, 6, 7) -->
-    <section class="sdc-section sdc-warroom-parent" data-step="warroom" style="padding: 0;">
+    <section class="sdc-section sdc-warroom-parent blue-background-00" data-step="warroom">
         <div class="sdc-warroom-layout">
             <div class="sdc-warroom-main">
                 <header class="sdc-warroom-header sdc-animate">

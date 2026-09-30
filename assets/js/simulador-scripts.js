@@ -5,6 +5,13 @@ document.addEventListener('DOMContentLoaded', () => {
     sessionStorage.removeItem('sdc_results');
     sessionStorage.removeItem('sdc_simulation_id');
 
+    // Modal Portal Pattern: mover el selector de herramientas directamente a document.body
+    // para evitar que transformaciones CSS en ancestros rompan position: fixed
+    const initialPicker = document.getElementById('sdc-tool-picker');
+    if (initialPicker && initialPicker.parentElement !== document.body) {
+        document.body.appendChild(initialPicker);
+    }
+
     // Iconos SVG reutilizables
     const iconCheck = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>';
 
@@ -17,6 +24,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const sdc_scroll_to_top = (element) => {
+        const modalContainer = element ? element.closest('.corporate-lightbox-body, .corporate-lightbox, .corporate-lightbox-dialog, .sdc-lightbox-scroll') : null;
+        if (modalContainer) {
+            modalContainer.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
     window.sdc_move_to_step = (stepNumber) => {
         const sections = document.querySelectorAll('.sdc-section');
         const targetSection = document.querySelector(`.sdc-section[data-step="${stepNumber}"]`);
@@ -25,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sections.forEach(s => s.classList.remove('active'));
             targetSection.classList.add('active');
             triggerAnimations(targetSection);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            sdc_scroll_to_top(targetSection);
         }
     };
 
@@ -155,21 +171,78 @@ document.addEventListener('DOMContentLoaded', () => {
     window.sdc_init_stakeholders = () => {
         const modules = document.querySelectorAll('.sdc-stk-module');
         const picker = document.getElementById('sdc-tool-picker');
+        if (!picker) return;
+
+        // Asegurar que el picker esté anclado al body (Portal pattern) para fixed relativo al viewport
+        if (picker.parentElement !== document.body) {
+            document.body.appendChild(picker);
+        }
+
         const closePicker = document.getElementById('close-picker');
         let activeModule = null;
         let selections = {};
+
+        const getScrollContainers = () => {
+            const list = [];
+            const lightboxBody = document.querySelector('.corporate-lightbox-body, .sdc-lightbox-scroll');
+            if (lightboxBody) list.push(lightboxBody);
+            const lightboxDialog = document.querySelector('.corporate-lightbox-dialog');
+            if (lightboxDialog) list.push(lightboxDialog);
+            const simContainer = document.querySelector('.sdc-simulator-container');
+            if (simContainer) list.push(simContainer);
+            list.push(document.body, document.documentElement);
+            return list;
+        };
 
         const openPicker = (module) => {
             activeModule = module;
             picker.classList.add('show');
             picker.style.display = 'flex';
+            getScrollContainers().forEach(el => {
+                if (el) el.style.overflow = 'hidden';
+            });
         };
 
         const closePickerFunc = () => {
             picker.classList.remove('show');
             picker.style.display = 'none';
             activeModule = null;
+            getScrollContainers().forEach(el => {
+                if (el) el.style.overflow = '';
+            });
         };
+
+        // Registrar eventos una sola vez sobre el elemento picker
+        if (!picker.dataset.initialized) {
+            picker.dataset.initialized = 'true';
+
+            // Prevenir propagación de scroll o arrastre en el fondo del overlay
+            picker.addEventListener('wheel', (e) => {
+                if (!e.target.closest('.sdc-picker-content')) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            picker.addEventListener('touchmove', (e) => {
+                if (!e.target.closest('.sdc-picker-content')) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            // Cerrar con tecla ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && picker.classList.contains('show')) {
+                    closePickerFunc();
+                }
+            });
+
+            // Cerrar si se hace clic en cualquier botón de cerrar el lightbox
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('[data-close-lightbox]') && picker.classList.contains('show')) {
+                    closePickerFunc();
+                }
+            });
+        }
 
         modules.forEach(mod => {
             const btn = mod.querySelector('.btn-assign-tool');
@@ -177,13 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (closePicker) closePicker.onclick = closePickerFunc;
-
-        // Cerrar con tecla ESC
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && picker.classList.contains('show')) {
-                closePickerFunc();
-            }
-        });
 
         picker.onclick = (e) => {
             // Cerrar con botón CANCELAR
@@ -354,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
             new Chart(document.getElementById('sdc-radar-chart'), {
                 type: 'radar',
                 data: { labels: ['Radar (URR)', 'Comité (CCC)', 'Tiempo (TTR)'], datasets: [{ label: 'Perfil de Gestión', data: [urrScore, cccScore, ttrScore], backgroundColor: 'rgba(255, 184, 0, 0.2)', borderColor: '#ffb800', borderWidth: 2 }] },
-                options: { scales: { r: { beginAtZero: true, max: 100, ticks: { display: false } } } }
+                options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 100, ticks: { display: false } } } }
             });
             new Chart(document.getElementById('sdc-bar-chart'), {
                 type: 'bar',
@@ -445,7 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 triggerAnimations(parent);
             }
             setTimeout(() => window.sdc_init_warroom(step), 100);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            sdc_scroll_to_top(parent);
             return;
         } else {
             const parent = document.querySelector('.sdc-warroom-parent');
