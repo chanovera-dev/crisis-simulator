@@ -142,7 +142,7 @@ function sdc_enqueue_scripts() {
 
     if ( is_page( 'simulador-de-crisis' ) || is_page_template( 'templates/page-simulator.php' ) ) {
         $should_enqueue = true;
-    } elseif ( is_page_template( 'templates/corporate.php' ) || is_front_page() ) {
+    } elseif ( is_page_template( 'templates/corporate.php' ) || is_page_template( 'templates/individuals.php' ) || is_front_page() ) {
         $should_enqueue = true;
     } elseif ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'simulador_de_crisis' ) ) {
         $should_enqueue = true;
